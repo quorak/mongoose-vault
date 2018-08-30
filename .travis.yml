@@ -7,10 +7,11 @@ services:
   - docker
 
 before_install:
-  - docker run --rm --cap-add=IPC_LOCK -e 'SKIP_SETCAP=yes' -e 'VAULT_DEV_ROOT_TOKEN_ID=insecureRootTestingToken' -p8200:8200 vault
+  - docker run -d --rm --cap-add=IPC_LOCK -e 'SKIP_SETCAP=yes' -e 'VAULT_DEV_ROOT_TOKEN_ID=insecureRootTestingToken' -p8200:8200 vault
   - docker ps -a
 
 env:
-  - VAULT_DEV_ROOT_TOKEN_ID=insecureRootTestingToken
-  - MONGO_CONNECTION_STRING=mongodb://localhost:27017/mongoose-vaul-test
-  - VAULT_CONNECTION_STRING=http://localhost:8200
+  global:
+    - VAULT_DEV_ROOT_TOKEN_ID=insecureRootTestingToken
+    - MONGO_CONNECTION_STRING=mongodb://localhost:27017/mongoose-vault-test
+    - VAULT_CONNECTION_STRING=http://localhost:8200
