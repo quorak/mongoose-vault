@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/quorak/mongoose-vault.svg?branch=master)](https://travis-ci.org/quorak/mongoose-vault)
+
 #mongoose-vault
 ==================
 
