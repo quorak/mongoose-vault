@@ -1,0 +1,41 @@
+{
+  "name": "mongoose-vault",
+  "version": "0.0.2",
+  "description": "Simple encryption plugin for Mongoose, using the transit backend from Hasicorp's Vault (Encryption as a Service).",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha src/**/*.spec.js"
+  },
+  "keywords": [
+    "mongoose",
+    "mongo",
+    "encrypt",
+    "encryption",
+    "mongodb",
+    "hashicorp",
+    "vault",
+    "encryptions-as-a-service"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quorak/mongoose-vault.git"
+  },
+  "author": "Tobias Nendel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/quorak/mongoose-vault/issues"
+  },
+  "homepage": "https://github.com/quorak/mongoose-vault#readme",
+  "dependencies": {
+    "mpath": "^0.4.1",
+    "superagent": "^3.8.3",
+    "underscore": "^1.9.1"
+  },
+  "devDependencies": {
+    "node-vault": "^0.9.0",
+    "chai": "^4.1.2",
+    "dotenv": "^6.0.0",
+    "mocha": "^1.0.0",
+    "mongoose": ">=5.0.0"
+  }
+}

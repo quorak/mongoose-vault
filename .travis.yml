@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - 6
+  - lts/*
+services:
+  - mongodb
+  - vault
+env:
+  - VAULT_DEV_ROOT_TOKEN_ID=insecureRootTestingToken
+  - MONGO_CONNECTION_STRING=mongodb://localhost:27017/mongoose-vaul-test
+  - VAULT_CONNECTION_STRING=http://localhost:8200
