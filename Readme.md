@@ -11,11 +11,13 @@ Heavily inspired by [mongoose-encryption](https://github.com/joegoldbeck/mongoos
 
 Read the [Security Notes](#security-notes) below.
 
+Encryption is only supported on fields of type String. Please file a FeatureRequest if you wish support for more Types.
+
 ### Key Name
 
 The scope of the encryption key can be `per_collection`, `per_document` or completely static. Vault will create a new key, if the specified name does not exist.
 
-### Searches on encrypted fields
+### Searches     on encrypted fields
 
 In Order to enable searches on encrypted fields, we can enable vaults [convergent_encryption](https://www.vaultproject.io/docs/secrets/transit/index.html) 
 on the used keys. This will only work on the subset that is encrypted same key. e.g. `keyName: per_collection` will work `keyName: per_document` will not  

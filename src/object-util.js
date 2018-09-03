@@ -44,7 +44,7 @@ var setFieldValue = function (obj, field, val) {
 var pick = function (obj, fields, options) {
   var result = {}
   var val
-  var options = options || {}
+  options = options || {}
   _.defaults(options, {
     excludeUndefinedValues: false
   })

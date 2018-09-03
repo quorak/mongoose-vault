@@ -1,6 +1,8 @@
 var objectUtil = require('.//object-util.js')
 var _ = require('underscore')
 var pick = objectUtil.pick
+var mpath = require('mpath')
+var setFieldValue = objectUtil.setFieldValue
 
 /**
  * Mongoose encryption plugin
@@ -19,7 +21,7 @@ var pick = objectUtil.pick
  */
 
 var mongooseVault = function (schema, options) {
-  var encryptedFields, excludedFields, collectionId, vault
+  var encryptedFields, excludedFields, vault
   // if(!options.vault) throw new Error("vault must be specified.")
 
   _.defaults(options, {
@@ -44,11 +46,19 @@ var mongooseVault = function (schema, options) {
 
   if (options.encryptedFields) {
     encryptedFields = _.difference(options.encryptedFields, ['_ct'])
+    encryptedFields.forEach(function (field) {
+      let fieldSchema = schema.paths[field]
+      if (!fieldSchema) throw new Error(`unknown field ${field}`)
+      if (fieldSchema.instance !== 'String') throw new Error(`'So far, only Strings are supported as encrypted Field. ${field} is a ${fieldSchema.instance}. Create a FeatureRequest if you wish to support more types.`)
+    })
   } else {
     excludedFields = _.union(['_id', '_ct'], options.excludeFromEncryption)
     encryptedFields = _.chain(schema.paths)
       .filter(function (pathDetails) { // exclude indexed fields
         return !pathDetails._index
+      })
+      .filter(function (pathDetails) { // exclude indexed fields
+        return pathDetails.instance === 'String'
       })
       .pluck('path') // get path name
       .difference(excludedFields) // exclude excluded fields
@@ -58,25 +68,29 @@ var mongooseVault = function (schema, options) {
 
   /**  Transformation functions */
 
-  function toBatchObject (obj, encryptedFields, keyName = 'ciphertext') {
+  function toBatchObject (obj, encryptedFields, keyName) {
     if (keyName !== 'ciphertext' && keyName !== 'plaintext') throw new Error('invalid argument')
     return encryptedFields
-      .filter(key => obj[key])
-      .map(key => {
+      .map(field => [ field, mpath.get(field, obj) ])
+      .filter(([field, value]) => value !== undefined)
+      .map(([field, value]) => {
         return {
-          context: Buffer.from(key).toString('base64'),
-          [keyName]: keyName === 'plaintext' ? Buffer.from(obj[key]).toString('base64') : obj[key]
+          context: Buffer.from(field).toString('base64'),
+          [keyName]: keyName === 'plaintext' ? Buffer.from(value).toString('base64') : value
         }
       })
   }
 
   function assignFromBatchObject (assignToObject, batchObject, encryptedFields, keyName = 'ciphertext') {
     if (keyName !== 'ciphertext' && keyName !== 'plaintext') throw new Error('invalid argument')
+
     encryptedFields
-      .filter(key => assignToObject[key])
-      .forEach((key, i) => {
-        assignToObject[key] = (keyName === 'plaintext' ? Buffer.from(batchObject[i][keyName], 'base64').toString('utf8') : batchObject[i][keyName])
-      })
+        .map(field => [field, mpath.get(field, assignToObject)])
+        .filter(([field, objectValue]) => objectValue !== undefined)
+        .forEach(([field], i) => {
+          let value = (keyName === 'plaintext' ? Buffer.from(batchObject[i][keyName], 'base64').toString('utf8') : batchObject[i][keyName])
+          setFieldValue(assignToObject, field, value)
+        })
   }
 
   /** Middleware */
@@ -119,14 +133,13 @@ var mongooseVault = function (schema, options) {
 
   schema.statics.connectVault = function (newVault) {
     vault = newVault
-    collectionId = options.collectionId || this.modelName
   }
 
   schema.methods.encrypt = async function () {
     let encryptionKeyName = keyNameGenerator(this.constructor.collection, this)
     let objectToEncrypt = pick(this, encryptedFields, {excludeUndefinedValues: true})
     let batchInput = toBatchObject(objectToEncrypt, encryptedFields, 'plaintext')
-    let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({ batch_input: batchInput }, keyCreationDefaults))
+    let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({batch_input: batchInput}, keyCreationDefaults))
     assignFromBatchObject(this, encryptionResponse.data.batch_results, encryptedFields, 'ciphertext')
   }
 

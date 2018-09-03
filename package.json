@@ -1,6 +1,6 @@
 {
   "name": "mongoose-vault",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Simple encryption plugin for Mongoose, using the transit backend from Hasicorp's Vault (Encryption as a Service).",
   "main": "src/mongoose-vault.js",
   "scripts": {
