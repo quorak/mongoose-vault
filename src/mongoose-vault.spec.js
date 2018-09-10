@@ -183,6 +183,23 @@ describe('Test Mongoose Vault with convergentEncryption enabled', function () {
     expect(models).to.have.lengthOf.at.least(1)
     expect(models[0]._doc).to.deep.include(validIdentity)
   })
+
+  it('Mongoose query builder with encrypted fields should return matching documents', async function () {
+    let model = await Identity2Model.create(validIdentity)
+    expect(model._doc).to.deep.include(validIdentity)
+
+    let models = await Identity2Model.find({firstName: 'Max'})
+    expect(models).to.be.an('array')
+    expect(models).to.have.lengthOf.at.least(1)
+    expect(models[0]._doc).to.deep.include(validIdentity)
+
+    models = await Identity2Model
+      .where('objectOfStrings.string1').equals('content1')
+      .or([{ 'objectOfStrings.string2': 'content1' }, { 'objectOfStrings.string2': 'content2' }])
+    expect(models).to.be.an('array')
+    expect(models).to.have.lengthOf.at.least(1)
+    expect(models[0]._doc).to.deep.include(validIdentity)
+  })
 })
 
 describe('Test Mongoose Vault with keyName per_document', function () {

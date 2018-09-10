@@ -3,6 +3,7 @@ var _ = require('underscore')
 var pick = objectUtil.pick
 var mpath = require('mpath')
 var setFieldValue = objectUtil.setFieldValue
+var deepForEach = require('deep-for-each')
 
 /**
  * Mongoose encryption plugin
@@ -104,14 +105,28 @@ var mongooseVault = function (schema, options) {
     schema.pre('find', async function () {
       let encryptionKeyName
       let query = this.getQuery()
-      let queryFieldsToEncrypt = Object.keys(query).filter(k => encryptedFields.includes(k))
-      if (queryFieldsToEncrypt.length > 0) {
+      let searchObject = []
+      deepForEach(query, (value, key, subject, path) => {
+        if (encryptedFields.includes(key)) {
+          searchObject.push({
+            value,
+            key,
+            subject,
+            batchEntry: {
+              context: Buffer.from(key).toString('base64'),
+              plaintext: Buffer.from(value).toString('base64')
+            }
+          })
+        }
+      })
+      if (searchObject.length > 0) {
         try {
           encryptionKeyName = keyNameGenerator(this.model.collection)
         } catch (e) { throw new Error('KeyName cannot be generated during searchPhase. (You cannot have per_document keyName and search for this field): ' + e.message) }
-        let batchInput = toBatchObject(query, queryFieldsToEncrypt, 'plaintext')
-        let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({ batch_input: batchInput }, keyCreationDefaults))
-        assignFromBatchObject(query, encryptionResponse.data.batch_results, queryFieldsToEncrypt, 'ciphertext')
+        let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({ batch_input: searchObject.map(e => e.batchEntry) }, keyCreationDefaults))
+        encryptionResponse.data.batch_results.forEach((result, i) => {
+          searchObject[i].subject[searchObject[i].key] = result.ciphertext
+        })
         this.setQuery(query)
       }
     })
