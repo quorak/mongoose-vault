@@ -179,8 +179,7 @@ describe('Test Mongoose Vault with convergentEncryption enabled', function () {
     expect(model._doc).to.deep.include(validIdentity)
 
     let models = await Identity2Model.find({firstName: 'Max'})
-    expect(models).to.be.an('array')
-    expect(models).to.have.lengthOf.at.least(1)
+    expect(models).to.be.an('array').and.have.lengthOf.at.least(1)
     expect(models[0]._doc).to.deep.include(validIdentity)
   })
 
@@ -189,16 +188,35 @@ describe('Test Mongoose Vault with convergentEncryption enabled', function () {
     expect(model._doc).to.deep.include(validIdentity)
 
     let models = await Identity2Model.find({firstName: 'Max'})
-    expect(models).to.be.an('array')
-    expect(models).to.have.lengthOf.at.least(1)
+    expect(models).to.be.an('array').and.have.lengthOf.at.least(1)
     expect(models[0]._doc).to.deep.include(validIdentity)
 
     models = await Identity2Model
       .where('objectOfStrings.string1').equals('content1')
       .or([{ 'objectOfStrings.string2': 'content1' }, { 'objectOfStrings.string2': 'content2' }])
-    expect(models).to.be.an('array')
-    expect(models).to.have.lengthOf.at.least(1)
+    expect(models).to.be.an('array').and.have.lengthOf.at.least(1)
     expect(models[0]._doc).to.deep.include(validIdentity)
+  })
+
+  it('Mongoose findOne by encrypted fields should return matching document', async function () {
+    let model = await Identity2Model.create(validIdentity)
+    expect(model._doc).to.deep.include(validIdentity)
+
+    let models = await Identity2Model.findOne({firstName: 'Max'})
+    expect(models._doc).to.deep.include(validIdentity)
+  })
+
+  it('Mongoose findOne query builder with encrypted fields should return matching document', async function () {
+    let model = await Identity2Model.create(validIdentity)
+    expect(model._doc).to.deep.include(validIdentity)
+
+    let models = await Identity2Model.findOne({firstName: 'Max'})
+    expect(models._doc).to.deep.include(validIdentity)
+
+    models = await Identity2Model.findOne()
+      .where('objectOfStrings.string1').equals('content1')
+      .or([{ 'objectOfStrings.string2': 'content1' }, { 'objectOfStrings.string2': 'content2' }])
+    expect(models._doc).to.deep.include(validIdentity)
   })
 })
 

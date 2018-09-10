@@ -94,41 +94,50 @@ var mongooseVault = function (schema, options) {
         })
   }
 
+  async function alterQuery (queryObject) {
+    let query = queryObject.getQuery()
+    let encryptionKeyName
+    let searchObject = []
+    // console.log(query)
+    deepForEach(query, (value, key, subject, path) => {
+      if (encryptedFields.includes(key)) {
+        searchObject.push({
+          value,
+          key,
+          subject,
+          batchEntry: {
+            context: Buffer.from(key).toString('base64'),
+            plaintext: Buffer.from(value).toString('base64')
+          }
+        })
+      }
+    })
+
+    if (searchObject.length > 0) {
+      try {
+        encryptionKeyName = keyNameGenerator(queryObject.model.collection)
+      } catch (e) { throw new Error('KeyName cannot be generated during searchPhase. (You cannot have per_document keyName and search for this field): ' + e.message) }
+      let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({ batch_input: searchObject.map(e => e.batchEntry) }, keyCreationDefaults))
+      encryptionResponse.data.batch_results.forEach((result, i) => {
+        searchObject[i].subject[searchObject[i].key] = result.ciphertext
+      })
+      queryObject.setQuery(query)
+    }
+  }
+
   /** Middleware */
 
   if (options.middleware) { // defaults to true
+    schema.pre('findOne', async function () {
+      await alterQuery(this)
+    })
     schema.post('findOne', async function (doc) {
       if (doc) {
         await doc.decrypt()
       }
     })
     schema.pre('find', async function () {
-      let encryptionKeyName
-      let query = this.getQuery()
-      let searchObject = []
-      deepForEach(query, (value, key, subject, path) => {
-        if (encryptedFields.includes(key)) {
-          searchObject.push({
-            value,
-            key,
-            subject,
-            batchEntry: {
-              context: Buffer.from(key).toString('base64'),
-              plaintext: Buffer.from(value).toString('base64')
-            }
-          })
-        }
-      })
-      if (searchObject.length > 0) {
-        try {
-          encryptionKeyName = keyNameGenerator(this.model.collection)
-        } catch (e) { throw new Error('KeyName cannot be generated during searchPhase. (You cannot have per_document keyName and search for this field): ' + e.message) }
-        let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({ batch_input: searchObject.map(e => e.batchEntry) }, keyCreationDefaults))
-        encryptionResponse.data.batch_results.forEach((result, i) => {
-          searchObject[i].subject[searchObject[i].key] = result.ciphertext
-        })
-        this.setQuery(query)
-      }
+      await alterQuery(this)
     })
     schema.post('find', function (docs) {
       // TODO Improve bulk operations to have only single request to vault
