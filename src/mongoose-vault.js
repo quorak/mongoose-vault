@@ -97,7 +97,9 @@ var mongooseVault = function (schema, options) {
 
   if (options.middleware) { // defaults to true
     schema.post('findOne', async function (doc) {
-      await doc.decrypt()
+      if (doc) {
+        await doc.decrypt()
+      }
     })
     schema.pre('find', async function () {
       let encryptionKeyName
