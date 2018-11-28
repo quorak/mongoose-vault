@@ -28,6 +28,7 @@ const schemaDefinition = {
     string2: { type: String },
     string3: { type: String }
   },
+  emptyString: { type: String },
   bool: { type: Boolean },
   num: { type: Number },
   date: { type: Date },
@@ -44,6 +45,7 @@ var validIdentity = {
   'email': 'test@test.de',
   'bool': true,
   'num': 42,
+  'emptyString': '',
   'objectOfStrings': {
     'string1': 'content1',
     'string2': 'content2',

@@ -73,7 +73,7 @@ var mongooseVault = function (schema, options) {
     if (keyName !== 'ciphertext' && keyName !== 'plaintext') throw new Error('invalid argument')
     return encryptedFields
       .map(field => [ field, mpath.get(field, obj) ])
-      .filter(([field, value]) => value !== undefined)
+      .filter(([field, objectValue]) => typeof objectValue === 'string' && objectValue !== '')
       .map(([field, value]) => {
         return {
           context: Buffer.from(field).toString('base64'),
@@ -87,9 +87,11 @@ var mongooseVault = function (schema, options) {
 
     encryptedFields
         .map(field => [field, mpath.get(field, assignToObject)])
-        .filter(([field, objectValue]) => objectValue !== undefined)
+        .filter(([field, objectValue]) => typeof objectValue === 'string' && objectValue !== '')
         .forEach(([field], i) => {
-          let value = (keyName === 'plaintext' ? Buffer.from(batchObject[i][keyName], 'base64').toString('utf8') : batchObject[i][keyName])
+          let value = (keyName === 'plaintext' && typeof batchObject[i][keyName] === 'string'
+            ? Buffer.from(batchObject[i][keyName], 'base64').toString('utf8')
+            : batchObject[i][keyName])
           setFieldValue(assignToObject, field, value)
         })
   }
