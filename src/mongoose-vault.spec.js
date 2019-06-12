@@ -16,6 +16,9 @@ before(async () => {
     await vault.mount({mount_point: 'transit', type: 'transit'})
   } catch (e) { /* Already mounted */ }
 })
+after(async () => {
+  mongoose.disconnect()
+})
 
 const schemaDefinition = {
   firstName: { type: String, required: true },
@@ -131,9 +134,11 @@ describe('Test Mongoose Vault with convergentEncryption disabled', function () {
     let model = new IdentityModel(validIdentity)
     expect(model._doc).to.deep.include(validIdentity)
     await model.encrypt()
-    expect(model._doc).to.deep.not.include(validIdentity)
     expect(model).property('firstName').to.contain('vault:v1:')
+    expect(model).property('lastName').to.contain('vault:v1:')
+    expect(model).property('email').to.contain('vault:v1:')
     expect(model).nested.property('objectOfStrings.string1').to.contain('vault:v1:')
+    expect(model).nested.property('objectOfStrings.string2').to.contain('vault:v1:')
   })
 
   it('Mongoose findOne should decrypt', async function () {

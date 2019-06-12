@@ -1,6 +1,6 @@
 {
   "name": "mongoose-vault",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Simple encryption plugin for Mongoose, using the transit backend from Hasicorp's Vault (Encryption as a Service).",
   "main": "src/mongoose-vault.js",
   "scripts": {
@@ -27,16 +27,16 @@
   },
   "homepage": "https://github.com/quorak/mongoose-vault#readme",
   "dependencies": {
-    "deep-for-each": "^2.0.3",
-    "mpath": "^0.4.1",
-    "superagent": "^3.8.3",
+    "deep-for-each": "^3.0.0",
+    "mpath": "^0.6.0",
+    "superagent": "^5.0.7",
     "underscore": "^1.9.1"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "dotenv": "^6.0.0",
-    "mocha": "^1.0.0",
-    "mongoose": ">=5.0.0",
-    "node-vault": "^0.9.0"
+    "chai": "^4.2.0",
+    "dotenv": "^8.0.0",
+    "mocha": "^6.1.4",
+    "mongoose": "^5.5.15",
+    "node-vault": "^0.9.9"
   }
 }
