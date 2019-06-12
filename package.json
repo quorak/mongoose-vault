@@ -21,7 +21,7 @@
     "url": "git+https://github.com/quorak/mongoose-vault.git"
   },
   "author": "Tobias Nendel",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/quorak/mongoose-vault/issues"
   },
