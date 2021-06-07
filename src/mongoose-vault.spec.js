@@ -21,8 +21,8 @@ after(async () => {
 })
 
 const schemaDefinition = {
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
+  firstName: { type: String },
+  lastName: { type: String },
   address: { type: String },
   address2: { type: String },
   email: { type: String },
@@ -160,6 +160,14 @@ describe('Test Mongoose Vault with convergentEncryption disabled', function () {
     let models = await IdentityModel.find({firstName: 'Max'})
     expect(models).to.be.an('array')
     expect(models).to.have.lengthOf(0)
+  })
+
+  it('Mongoose create document without encrypted field should not error', async function () {
+    await IdentityModel.create({ num: 1 })
+  })
+
+  it('Mongoose find selecting unencrypted field should not error', async function () {
+    await IdentityModel.find({}, ['num'])
   })
 })
 
