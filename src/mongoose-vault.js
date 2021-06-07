@@ -167,16 +167,20 @@ var mongooseVault = function (schema, options) {
     let encryptionKeyName = keyNameGenerator(this.constructor.collection, this)
     let objectToEncrypt = pick(this, encryptedFields, {excludeUndefinedValues: true})
     let batchInput = toBatchObject(objectToEncrypt, encryptedFields, 'plaintext')
-    let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({batch_input: batchInput}, keyCreationDefaults))
-    assignFromBatchObject(this, encryptionResponse.data.batch_results, encryptedFields, 'ciphertext')
+    if (batchInput.length > 0) {
+      let encryptionResponse = await vault.write('transit/encrypt/' + encryptionKeyName, Object.assign({ batch_input: batchInput }, keyCreationDefaults))
+      assignFromBatchObject(this, encryptionResponse.data.batch_results, encryptedFields, 'ciphertext')
+    }
   }
 
   schema.methods.decrypt = async function () {
     let encryptionKeyName = keyNameGenerator(this.constructor.collection, this)
     let objectToDecrypt = pick(this, encryptedFields, {excludeUndefinedValues: true})
     let batchInput = toBatchObject(objectToDecrypt, encryptedFields, 'ciphertext')
-    let decryptionResponse = await vault.write('transit/decrypt/' + encryptionKeyName, Object.assign({ batch_input: batchInput }, keyCreationDefaults))
-    assignFromBatchObject(this, decryptionResponse.data.batch_results, encryptedFields, 'plaintext')
+    if (batchInput.length > 0) {
+      let decryptionResponse = await vault.write('transit/decrypt/' + encryptionKeyName, Object.assign({ batch_input: batchInput }, keyCreationDefaults))
+      assignFromBatchObject(this, decryptionResponse.data.batch_results, encryptedFields, 'plaintext')
+    }
   }
 }
 

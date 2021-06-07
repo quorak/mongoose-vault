@@ -70,7 +70,7 @@ User.create({name:"Max"})
 Setup Hashicorp Vault and Mongo
 ```bash
 docker run --rm --cap-add=IPC_LOCK -e 'VAULT_DEV_ROOT_TOKEN_ID=insecureRootTestingToken' -p8200:8200 vault
-docker run --rm -27017:27017 mongo
+docker run --rm -p27017:27017 mongo
 ```
 
 

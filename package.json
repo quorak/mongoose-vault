@@ -29,7 +29,7 @@
   "dependencies": {
     "deep-for-each": "^3.0.0",
     "mpath": "^0.6.0",
-    "superagent": "^5.0.7",
+    "superagent": "^5.0.9",
     "underscore": "^1.9.1"
   },
   "devDependencies": {
