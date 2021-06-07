@@ -225,6 +225,32 @@ describe('Test Mongoose Vault with convergentEncryption enabled', function () {
       .or([{ 'objectOfStrings.string2': 'content1' }, { 'objectOfStrings.string2': 'content2' }])
     expect(models._doc).to.deep.include(validIdentity)
   })
+
+  it('Mongoose countDocuments query should return correct count', async function () {
+    let uniqueFirstName = 'countDocuments' + Date.now()
+    let uniqueDocument = {
+      ...validIdentity,
+      firstName: uniqueFirstName
+    }
+    let model = await Identity2Model.create(uniqueDocument)
+    expect(model._doc).to.deep.include(uniqueDocument)
+
+    let count = await Identity2Model.countDocuments({firstName: uniqueFirstName})
+    expect(count).to.equal(1)
+  })
+
+  it('Mongoose deleteMany should delete document', async function () {
+    let uniqueFirstName = 'deleteMany' + Date.now()
+    let uniqueDocument = {
+      ...validIdentity,
+      firstName: uniqueFirstName
+    }
+    let model = await Identity2Model.create(uniqueDocument)
+    expect(model._doc).to.deep.include(uniqueDocument)
+
+    let { deletedCount } = await Identity2Model.deleteMany({firstName: uniqueFirstName})
+    expect(deletedCount).to.equal(1)
+  })
 })
 
 describe('Test Mongoose Vault with keyName per_document', function () {

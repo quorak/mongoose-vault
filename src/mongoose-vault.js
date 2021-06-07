@@ -130,16 +130,23 @@ var mongooseVault = function (schema, options) {
   /** Middleware */
 
   if (options.middleware) { // defaults to true
-    schema.pre('findOne', async function () {
-      await alterQuery(this)
+
+    let queryFunctionNames = [
+      'countDocuments',
+      'deleteMany',
+      'find',
+      'findOne'
+    ]
+    queryFunctionNames.forEach(functionName => {
+      schema.pre(functionName, async function () {
+        await alterQuery(this)
+      })
     })
+
     schema.post('findOne', async function (doc) {
       if (doc) {
         await doc.decrypt()
       }
-    })
-    schema.pre('find', async function () {
-      await alterQuery(this)
     })
     schema.post('find', function (docs) {
       // TODO Improve bulk operations to have only single request to vault
