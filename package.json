@@ -28,7 +28,7 @@
   "homepage": "https://github.com/quorak/mongoose-vault#readme",
   "dependencies": {
     "deep-for-each": "^3.0.0",
-    "mpath": "^0.6.0",
+    "mpath": "^0.8.4",
     "superagent": "^5.0.7",
     "underscore": "^1.9.1"
   },
